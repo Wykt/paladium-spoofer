@@ -1,6 +1,4 @@
 #include "main.h"
-#include <fstream>
-#include <sstream>
 #include <WbemCli.h>
 #include <gl/GL.h>
 
@@ -20,21 +18,6 @@ static void (*orig_nglGetTexImage)(GLenum target, GLint level, GLenum format, GL
 void hk_nglGetTexImage(GLenum target, GLint level, GLenum format, GLenum type, GLvoid* pixels) {
     system("msg %username% \"It seems like a screenshot has been taken.\"");
     orig_nglGetTexImage(target, level, format, type, pixels);
-}
-
-std::wstring ReadWStringFromFile(const std::wstring& fileName) {
-    std::wifstream inFile(fileName);
-
-    if (!inFile.is_open()) {
-        throw std::runtime_error("Unable to open file for reading");
-    }
-
-    inFile >> std::noskipws;
-    std::wstringstream wss;
-    wss << inFile.rdbuf();
-    inFile.close();
-
-    return wss.str();
 }
 
 LSTATUS APIENTRY hk_RegQueryValueExW(HKEY hKey, LPCWSTR lpValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) 
@@ -84,7 +67,7 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReser
 
     HMODULE lwjgl_module = GetModuleHandleA("lwjgl64.dll");
 
-    value = ReadWStringFromFile(L"C:\\Users\\Public\\nt.dat");
+    value = utils::read_file_to_wstr(L"C:\\Users\\Public\\nt.dat");
 
     DetourRestoreAfterWith();
     DetourTransactionBegin();
@@ -102,7 +85,7 @@ BOOL APIENTRY DllMain( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReser
 
     DetourAttach(&(PVOID&)orig_RegQueryValueExW, hk_RegQueryValueExW);
     DetourAttach(&(PVOID&)orig_GetVolumeNameForVolumeMountPointW, hk_GetVolumeNameForVolumeMountPointW);
-    wmi_hook::initialize(hModule, value);
+    wmi_hook::initialize(value);
     module_hooks::initialize_hooks();
 
     DetourTransactionCommit();

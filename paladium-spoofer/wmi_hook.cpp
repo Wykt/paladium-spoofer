@@ -47,7 +47,7 @@ namespace wmi_hook
 		return hResult;
 	}
 
-	void initialize(HMODULE hSelf, std::wstring unique_value)
+	void initialize(std::wstring unique_value)
 	{
 		unique_hash_value = unique_value;
 

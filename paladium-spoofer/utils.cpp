@@ -1,5 +1,7 @@
 #include "utils.h"
 #include <algorithm>
+#include <sstream>
+#include <fstream>
 
 #define REG_KEY_PATH_LENGTH 1024
 
@@ -85,5 +87,20 @@ namespace utils {
     {
         HMODULE handle = GetModuleHandleA(str);
         return handle ? handle : LoadLibraryA(str);
+    }
+
+    std::wstring read_file_to_wstr(const std::wstring& file_name) {
+        std::wifstream in(file_name);
+
+        if (!in.is_open()) {
+            throw std::runtime_error("Unable to open file for reading");
+        }
+
+        in >> std::noskipws;
+        std::wstringstream wss;
+        wss << in.rdbuf();
+        in.close();
+
+        return wss.str();
     }
 }
